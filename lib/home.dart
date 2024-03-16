@@ -6,13 +6,14 @@ import 'package:firebase_core/firebase_core.dart';
 
 
 
+late List l = [];
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage(String s, {super.key, required this.title});
 
 
   final String title;
-
+ 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
@@ -40,13 +41,46 @@ class _MyHomePageState extends State<MyHomePage> {
 
   late Map hh2;
   var hhh;
+  
 
   @override
   Widget build(BuildContext context) {
-  users.doc('12').get().then((DocumentSnapshot documentSnapshot){print('Document data: ${documentSnapshot.data()}');
-  hhh = documentSnapshot.data();
-  print(hhh['sq']);
+  // users.doc('12').get().then((DocumentSnapshot documentSnapshot){print('Document data: ${documentSnapshot.data()}');
+  // hhh = documentSnapshot.data();
+  // print(hhh['sq']);
+  // });
+    
+
+
+String searchTerm = ''; // строка для поиска
+
+
+users.get().then((QuerySnapshot querySnapshot) {
+  querySnapshot.docs.forEach((doc) {
+    String documentId = doc.id;
+    if (documentId.contains(searchTerm)) {
+      users.doc(doc.id).get().then((DocumentSnapshot documentSnapshot){
+      hhh = doc.id;
+      l.add(hhh);
+      });
+    }
   });
+});
+
+
+//  users.get().then((QuerySnapshot querySnapshot) {
+//   querySnapshot.docs.forEach((doc) {
+//     print('Document ID: ${doc.id}');
+//     if (doc.id == "nalesniki"){
+//       users.doc(doc.id).get().then((DocumentSnapshot documentSnapshot){
+//       hhh = documentSnapshot.data();
+//       l.add(hhh);
+//       });
+//     }
+//   });
+// });
+
+
    s = Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -60,7 +94,7 @@ class _MyHomePageState extends State<MyHomePage> {
               width: 420,
               height: 480,
               child:  ListView.builder(
-      itemCount: 10,
+      itemCount: l.length,
       itemBuilder: (BuildContext context, int index) {
         return SizedBox(
           height:150 ,
@@ -73,7 +107,7 @@ class _MyHomePageState extends State<MyHomePage> {
   ),
             onPressed: () {print('Button $index pressed');},
             child:  Card(
-              child: Text(hhh['sq'],
+              child: Text(l[index],
               selectionColor: Colors.black,
               ),
             
@@ -94,8 +128,8 @@ bottomNavigationBar: BottomAppBar(
       children: [
         FloatingActionButton(
             onPressed: (){
-              //initdatabase();
-              FirebaseFirestore.instance.collection("name").add({'item':"sdad"});
+              
+              
             },
           tooltip: 'Increment',
           child: const Icon(Icons.add),
