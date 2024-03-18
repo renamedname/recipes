@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:recipes/main.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:recipes/search.dart';
 
 
 
@@ -29,7 +30,7 @@ class _MyHomePageState extends State<MyHomePage> {
   //   WidgetsFlutterBinding.ensureInitialized();
   //   await Firebase.initializeApp();
   // }
-
+  
   
 
   void _incrementCounter() {
@@ -41,50 +42,64 @@ class _MyHomePageState extends State<MyHomePage> {
 
   late Map hh2;
   var hhh;
+  String searchTerm = '';
+
+ void _buildlist() async {
+  List tempList = [];
+  CollectionReference users =  FirebaseFirestore.instance.collection('repices');
+  QuerySnapshot querySnapshot = await users.get();
+
+  querySnapshot.docs.forEach((doc) {
+    String documentId = doc.id;
+    if (documentId.contains(searchTerm)) {
+      tempList.add(documentId);
+    }
+  });
+
+  setState(() {
+    l = tempList;
+  });
+}
+
   
 
   @override
   Widget build(BuildContext context) {
-  // users.doc('12').get().then((DocumentSnapshot documentSnapshot){print('Document data: ${documentSnapshot.data()}');
-  // hhh = documentSnapshot.data();
-  // print(hhh['sq']);
-  // });
-    
 
 
-String searchTerm = ''; // строка для поиска
-
-
-users.get().then((QuerySnapshot querySnapshot) {
-  querySnapshot.docs.forEach((doc) {
-    String documentId = doc.id;
-    if (documentId.contains(searchTerm)) {
-      users.doc(doc.id).get().then((DocumentSnapshot documentSnapshot){
-      hhh = doc.id;
-      l.add(hhh);
-      });
-    }
-  });
-});
-
-
-//  users.get().then((QuerySnapshot querySnapshot) {
-//   querySnapshot.docs.forEach((doc) {
-//     print('Document ID: ${doc.id}');
-//     if (doc.id == "nalesniki"){
-//       users.doc(doc.id).get().then((DocumentSnapshot documentSnapshot){
-//       hhh = documentSnapshot.data();
-//       l.add(hhh);
-//       });
-//     }
-//   });
-// });
-
-
+ 
    s = Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
+        title: Row(
+          children: [Expanded(child:
+        TextField(
+          
+            onChanged: (value) {
+              setState(() {
+                searchTerm = value;
+                print(searchTerm);
+                l=[];
+                _buildlist(); 
+
+              });
+            },
+            decoration: InputDecoration(
+              labelText: 'Search',
+            ),
+          ),
+          ),
+           FloatingActionButton(
+          onPressed: (){Navigator.pushNamedAndRemoveUntil(context, "/search", (route) => false);},
+          tooltip: 'Dement',
+          child: const Icon(Icons.ac_unit),
+        ),
+          ],
+
+
+        ),
+
+        
       ),
       body: Center(
         child: Column(
@@ -151,7 +166,7 @@ bottomNavigationBar: BottomAppBar(
     ],
   ),
 ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked, // Устанавливаем положение плавающих кнопок
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked, 
     );
 
 
@@ -219,7 +234,7 @@ if (menuu == true){
       ),
       
 bottomNavigationBar: BottomAppBar(
-  color: Theme.of(context).colorScheme.primaryContainer, // Используйте цвет кнопок из темы
+  color: Theme.of(context).colorScheme.primaryContainer,
   child: Row(
     mainAxisAlignment: MainAxisAlignment.center,
     children: [

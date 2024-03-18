@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
 import 'package:recipes/home.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:recipes/search.dart';
 
 
 void main() async {
@@ -32,11 +30,11 @@ class MyApp extends StatelessWidget {
           colorScheme: ColorScheme.fromSeed(seedColor: Color.fromARGB(255, 255, 150, 52)).copyWith(background: const Color.fromARGB(255, 32, 32, 32)),
           primaryColor: Color.fromARGB(255, 255, 130, 58),
           textTheme: TextTheme(
-          headlineMedium: TextStyle(color: Color.fromARGB(255, 31, 31, 31)),
-          bodyMedium: TextStyle(color: const Color.fromARGB(255, 38, 37, 37)),),
+          headlineMedium: TextStyle(color: Color.fromARGB(255, 255, 255, 255)),
+          bodyMedium: TextStyle(color: Color.fromARGB(255, 254, 254, 254)),),
               
       ),
-   // builder: (context, child) {
+   // builder: (context, child) { 
   //  return Navigator(
      // onGenerateRoute: (settings) {
        // return PageRouteBuilder(
@@ -53,7 +51,7 @@ class MyApp extends StatelessWidget {
     initialRoute: "/",
     routes: {
       "/":(context) => MyHomePage("flutter", title: 'fluter',),
-      
+      "/search":(context) => searchPage(),
       
     },
 
