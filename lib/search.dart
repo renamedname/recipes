@@ -1,29 +1,28 @@
+
+
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:recipes/home.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 
 class searchPage extends StatefulWidget {
   const searchPage({super.key});
-
-
-  
- 
   @override
   State<searchPage> createState() => _searchPage();
 }
 
 class _searchPage extends State<searchPage> {
-
+String imageURL = '';
 CollectionReference users = FirebaseFirestore.instance.collection('component');
 String searchTerm = '';
 List<String> choiceList = [];
 List<String> l = [];
 List<String> fl =[];
-
-
-
+List<String> imagelist =[];
+CollectionReference recipes =  FirebaseFirestore.instance.collection('repices');
+bool isLoading = false;
 
 
   void _incrementCounter() {
@@ -33,6 +32,39 @@ List<String> fl =[];
 
   }
 
+
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+
+
+ Future<void> loadImage(String id) async {
+
+
+  try {
+      String? imag = "";
+ 
+     DocumentSnapshot recipeSnapshot =
+        await FirebaseFirestore.instance.collection('repices').doc(id).get();
+    if (recipeSnapshot.exists) {
+      imag = recipeSnapshot.get('ImageName');
+    }
+    
+    Reference ref = FirebaseStorage.instance.ref(imag);
+    String downloadURL = await ref.getDownloadURL();
+    setState(() {
+      imageURL = downloadURL;
+      imagelist.add(imageURL);
+     
+    });
+  } catch (error) {
+    print("Error loading image: $error");
+    
+  }
+}
 
 
 void _buildlist() async {
@@ -69,9 +101,9 @@ void findRecipesWithComponents(List<String> selectedComponents) async {
 
   for (String component in selectedComponents) {
 
-    print(querySnapshot.docs);
+   // print(querySnapshot.docs);
      for (var doc in querySnapshot.docs) {
-      print(doc.data());
+     // print(doc.data());
       var d = doc.data();
        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
       
@@ -81,11 +113,7 @@ void findRecipesWithComponents(List<String> selectedComponents) async {
         
       }
     
-
-
   }
-
-
 
   }
 
@@ -105,6 +133,7 @@ late bool sea = false;
 
   @override
   Widget build(BuildContext context) {
+    //loadImage();
     Scaffold s;
     if (sea == false){
      s = Scaffold(
@@ -118,7 +147,7 @@ late bool sea = false;
             onChanged: (value) {
               setState(() {
                 searchTerm = value;
-                print(searchTerm);
+               // print(searchTerm);
                 
                 _buildlist(); 
 
@@ -131,11 +160,19 @@ late bool sea = false;
           ),
            FloatingActionButton(
           onPressed: (){findRecipesWithComponents(choiceList);
+          ;
           setState(() {
+
             findRecipesWithComponents(choiceList);
-            
+   
+            // for (String id in fl){
+            //   loadImage(id);
+            // }
+            /////////////////////////////////////////////////////////////
             sea = true;
-          });
+          }
+          
+          );
           },
           tooltip: 'Dement',
           child: const Icon(Icons.ac_unit),
@@ -155,7 +192,7 @@ late bool sea = false;
             onChanged: (value) {
               setState(() {
                 searchTerm = value;
-                print(searchTerm);
+               // print(searchTerm);
                 l=[];
                 _buildlist(); 
 
@@ -175,16 +212,24 @@ late bool sea = false;
               child:  ListView.builder(
       itemCount: l.length,
       itemBuilder: (BuildContext context, int index) {
+        //loadImage();
         return Card(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1), ),
-
+          
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-                Text(l[index]),
+
                  Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                    children: [
+                    
+                    Text(l[index],
+                    
+                      style: TextStyle(fontSize: 20,color: Colors.black,),
                       
+                    ),
+                    
                   if(!choiceList.contains(l[index]))
 
 
@@ -262,15 +307,23 @@ bottomNavigationBar: BottomAppBar(
     );}
 
 
-
-
     else
 
 
 
-
-
     {
+      
+        
+     setState(() {
+       if (isLoading == false && fl.length > 0){
+     
+       for (String id in fl){
+              loadImage(id);
+            }
+        isLoading = true;
+       }
+      });   
+
       s = Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -281,7 +334,7 @@ bottomNavigationBar: BottomAppBar(
             onChanged: (value) {
               setState(() {
                 searchTerm = value;
-                print(searchTerm);
+               // print(searchTerm);
                 l=[];
                 _buildlist(); 
 
@@ -325,9 +378,21 @@ bottomNavigationBar: BottomAppBar(
   ),
             onPressed: () {print('Button $index pressed');},
             child:  Card(
-              child: Text(fl[index],
-              selectionColor: Colors.black,
-              ),
+              child:Row(
+                children: [
+                  if(imagelist.length >= index+1 )
+                  isLoading
+                    ?  Image.network(imagelist[index])
+                    : CircularProgressIndicator(), //////////////////////////////////////////
+                  
+                  SizedBox(width: 10),
+                  Text(fl[index],
+                    style: TextStyle(fontSize: 20,color: Colors.black),
+                  
+                  ),
+                ],
+              )
+              
             
 
             ),
@@ -355,7 +420,9 @@ bottomNavigationBar: BottomAppBar(
 
       SizedBox(width: 50),
       FloatingActionButton(
-        onPressed: (){ },
+        onPressed: (){setState(() {
+          sea = false;
+        }); },
         tooltip: 'Decrement',
         child: const Icon(Icons.home),
       ),
@@ -371,8 +438,6 @@ bottomNavigationBar: BottomAppBar(
 ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked, 
     );
-
-      
     }
     return s;
   }

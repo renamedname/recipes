@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:recipes/recip.dart';
 import 'firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:recipes/home.dart';
 import 'package:recipes/search.dart';
-
+import 'package:recipes/result.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -52,6 +54,8 @@ class MyApp extends StatelessWidget {
     routes: {
       "/":(context) => MyHomePage("flutter", title: 'fluter',),
       "/search":(context) => searchPage(),
+      "/result":(context) => FirestoreImageDisplay(),
+      
       
     },
 

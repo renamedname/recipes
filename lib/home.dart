@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:recipes/main.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:recipes/recip.dart';
 import 'package:recipes/search.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 
 
@@ -21,9 +23,13 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   String? hh;
+  String imageURL = '';
   bool menuu = true;
   late Scaffold s;
   CollectionReference users = FirebaseFirestore.instance.collection('repices');
+  List<String> fl =[];
+List<String> imagelist =[];
+bool isLoading = false;
   // users.doc('12').get().then((DocumentSnapshot documentSnapshot){print('Document data: ${documentSnapshot.data()}');});
 
   //   void initdatabase() async{
@@ -31,7 +37,32 @@ class _MyHomePageState extends State<MyHomePage> {
   //   await Firebase.initializeApp();
   // }
   
-  
+
+Future<void> loadImage(String id) async {
+
+
+  try {
+      String? imag = "";
+ 
+     DocumentSnapshot recipeSnapshot =
+        await FirebaseFirestore.instance.collection('repices').doc(id).get();
+    if (recipeSnapshot.exists) {
+      imag = recipeSnapshot.get('ImageName');
+    }
+    
+    Reference ref = FirebaseStorage.instance.ref(imag);
+    String downloadURL = await ref.getDownloadURL();
+    setState(() {
+      imageURL = downloadURL;
+      imagelist.add(imageURL);
+     
+    });
+  } catch (error) {
+    print("Error loading image: $error");
+    
+  }
+}  
+
 
   void _incrementCounter() {
     setState(() {
@@ -81,7 +112,15 @@ class _MyHomePageState extends State<MyHomePage> {
                 print(searchTerm);
                 l=[];
                 _buildlist(); 
-
+                 setState(() {
+       if (isLoading == false && fl.length > 0){
+     
+       for (String id in fl){
+              loadImage(id);
+            }
+        isLoading = true;
+       }
+      });   
               });
             },
             decoration: InputDecoration(
@@ -120,10 +159,24 @@ class _MyHomePageState extends State<MyHomePage> {
                 borderRadius: BorderRadius.circular(1.0), 
     ),
   ),
-            onPressed: () {print('Button $index pressed');},
+            onPressed: () {Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (context) => RecipeInstructionPage(id: l[index]),
+  ),
+);},
             child:  Card(
-              child: Text(l[index],
-              selectionColor: Colors.black,
+              
+              child: Row(
+                children: [if(imagelist.length >= index+1 )
+                  isLoading
+                    ?  Image.network(imagelist[index])
+                    : CircularProgressIndicator(), //////////////////////////////////////////
+                  
+                  Text(l[index],
+                  selectionColor: Colors.black,
+                  ),
+                ],
               ),
             
 
