@@ -1,10 +1,17 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:recipes/main.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:recipes/recip.dart';
+import 'package:recipes/recipt.dart';
 import 'package:recipes/search.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:recipes/recipt.dart';
+import 'package:recipes/favorite.dart';
+import 'dart:io';
 
 
 
@@ -25,11 +32,15 @@ class _MyHomePageState extends State<MyHomePage> {
   String? hh;
   String imageURL = '';
   bool menuu = true;
+  bool favor = false;
   late Scaffold s;
   CollectionReference users = FirebaseFirestore.instance.collection('repices');
   List<String> fl =[];
-List<String> imagelist =[];
-bool isLoading = false;
+  Map<String,dynamic> imagelist ={};
+  bool isLoading = false;
+  bool menufav = false;
+  int idmenufav = -1;
+  
   // users.doc('12').get().then((DocumentSnapshot documentSnapshot){print('Document data: ${documentSnapshot.data()}');});
 
   //   void initdatabase() async{
@@ -54,7 +65,7 @@ Future<void> loadImage(String id) async {
     String downloadURL = await ref.getDownloadURL();
     setState(() {
       imageURL = downloadURL;
-      imagelist.add(imageURL);
+      imagelist[id]=imageURL;
      
     });
   } catch (error) {
@@ -69,6 +80,17 @@ Future<void> loadImage(String id) async {
      
     });
 
+  }
+static void favadd(String id) async {
+      String filePath = "fav.txt";
+      // Read the file
+      File file = new File(filePath);
+      String fileContent = await file.readAsString();
+      
+      if (!fileContent.contains(id)) {
+          await file.writeAsString('$fileContent\n$id', mode: FileMode.write);
+      }
+      
   }
 
   late Map hh2;
@@ -96,7 +118,23 @@ Future<void> loadImage(String id) async {
 
   @override
   Widget build(BuildContext context) {
+   
+  
 
+   if ( menuu == false && favor == false){
+    setState(() {
+      //imagelist = [];
+       if (isLoading == false && l.length > 0){
+     
+       for (String id in l){
+
+              loadImage(id);
+              
+            }
+        isLoading = true;
+        
+       }
+      });
 
  
    s = Scaffold(
@@ -109,19 +147,14 @@ Future<void> loadImage(String id) async {
             onChanged: (value) {
               setState(() {
                 searchTerm = value;
-                print(searchTerm);
+               
                 l=[];
                 _buildlist(); 
-                 setState(() {
-       if (isLoading == false && fl.length > 0){
-     
-       for (String id in fl){
-              loadImage(id);
-            }
-        isLoading = true;
-       }
-      });   
+                 imagelist = {};
+                 isLoading = false;
+       
               });
+              
             },
             decoration: InputDecoration(
               labelText: 'Search',
@@ -129,9 +162,10 @@ Future<void> loadImage(String id) async {
           ),
           ),
            FloatingActionButton(
+            heroTag: 'seaamm,mnr',
           onPressed: (){Navigator.pushNamedAndRemoveUntil(context, "/search", (route) => false);},
           tooltip: 'Dement',
-          child: const Icon(Icons.ac_unit),
+          child: const Icon(Icons.saved_search_rounded),
         ),
           ],
 
@@ -144,43 +178,51 @@ Future<void> loadImage(String id) async {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            SizedBox(
-              width: 420,
-              height: 480,
-              child:  ListView.builder(
+             Expanded(child: ListView.builder(
       itemCount: l.length,
       itemBuilder: (BuildContext context, int index) {
         return SizedBox(
-          height:150 ,
+          height:155 ,
           child: ElevatedButton(
             
             style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(1.0), 
+                borderRadius: BorderRadius.circular(15.0), 
     ),
   ),
             onPressed: () {Navigator.push(
   context,
   MaterialPageRoute(
-    builder: (context) => RecipeInstructionPage(id: l[index]),
+    builder: (context) => recipt(idd: l[index]),
   ),
 );},
-            child:  Card(
-              
-              child: Row(
+            child:   Row(
+                
                 children: [if(imagelist.length >= index+1 )
-                  isLoading
-                    ?  Image.network(imagelist[index])
-                    : CircularProgressIndicator(), //////////////////////////////////////////
-                  
-                  Text(l[index],
-                  selectionColor: Colors.black,
+                  isLoading && imagelist[l[index]] != null
+                    ?  Image.network(
+                    imagelist[l[index]],
+                    fit: BoxFit.cover,
+                    width: 120.0,
+                    height: 120.0,
+)
+                    : CircularProgressIndicator(), 
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      
+                      Text("      ${l[index]}",),
+                    ],
                   ),
+                 // style: TextStyle(color: const Color.fromARGB(255, 0, 0, 0)),
+                 
+                  
                 ],
               ),
             
 
-            ),
+            
           ),
         );
       },
@@ -194,25 +236,29 @@ bottomNavigationBar: BottomAppBar(
   child: Row(
     mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        FloatingActionButton(
-            onPressed: (){
-              
-              
-            },
-          tooltip: 'Increment',
-          child: const Icon(Icons.add),
+      FloatingActionButton(
+        heroTag: 'searcjkjkhxz',
+        onPressed: (){setState(() {
+         menuu = false;
+         favor = false; 
+          });},
+        tooltip: 'Increment',
+        child: const Icon(Icons.search),
       ),
-
       SizedBox(width: 50),
       FloatingActionButton(
-        onPressed: (){setState(() {menuu = false;}); },
+        heroTag: 'jjkkkkkkkkkkkkk',
+        onPressed: (){setState(() {
+           menuu = false;favor = true; isLoading = false;
+          }); },
         tooltip: 'Decrement',
         child: const Icon(Icons.home),
       ),
 
       SizedBox(width: 50),
       FloatingActionButton(
-        onPressed: (){setState(() {menuu = true;});},
+        heroTag: 'ressultzjjxckkax',
+        onPressed: (){setState(() {menuu = true;favor=false;});},
         tooltip: 'Dement',
         child: const Icon(Icons.menu),
       )
@@ -223,11 +269,11 @@ bottomNavigationBar: BottomAppBar(
     );
 
 
+   }
 
 
 
-
-
+///////////////////////////////////////  menuu ////////////////////////////////////////////////////////////////
 if (menuu == true){
     s = Scaffold(
       appBar: AppBar(
@@ -239,49 +285,55 @@ if (menuu == true){
           
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text(
-              'ilosc',
-            ),
+            
             Text(
-              '(^◕ᴥ◕^)    ฅ^•ﻌ•^ฅ',
+              'ฅ^•ﻌ•^ฅ',
               style: Theme.of(context).textTheme.headlineMedium,
             ),
     
-      SizedBox(
+    SizedBox(
         width: 300,
        child: FloatingActionButton( 
-        onPressed: (){},
+        heroTag: 'searagggvbcsdwch',
+        onPressed: (){Navigator.pushNamed(context, "/add");},
         tooltip: 'Dement',
-        child: const Icon(Icons.abc_outlined),  
-    ),
-    ),
+        child: Text("add recipe"),
 
-
-      SizedBox(
-        width: 300,
-       child: FloatingActionButton( 
-        onPressed: (){},
-        tooltip: 'Dement',
-        child: const Icon(Icons.abc),  
     ),
     ),
-      
       SizedBox(
         width: 300,
         child: FloatingActionButton(
-          onPressed: (){Navigator.pushNamedAndRemoveUntil(context, "/menu", (route) => false);},
-          tooltip: 'Dement',
-          child: const Icon(Icons.ac_unit),
+          heroTag: 'seaarschjj',
+          onPressed: (){Navigator.pushNamedAndRemoveUntil(context, "/search", (route) => false);},
+         
+          child: Text("componet search"),
         ),
       ),
       SizedBox(
         width: 300,
-        child: FloatingActionButton(
-          onPressed: (){Navigator.pushNamedAndRemoveUntil(context, "/menu", (route) => false);},
-          tooltip: 'Dement',
-          child: const Icon(Icons.access_time),
-        ),
-      )
+       child: FloatingActionButton( 
+        heroTag: 'searasdwch',
+        onPressed: (){},
+        tooltip: 'Dement',
+        child: Text("Settings"),
+
+    ),
+    ),
+
+
+      SizedBox(
+        width: 300,
+       child: FloatingActionButton( 
+        heroTag: 'searwch',
+        onPressed: (){},
+        tooltip: 'Dement',
+        child: Text("donate"),    
+    ),
+    ),
+      
+      
+      
           ],
         ),
       ),
@@ -292,20 +344,194 @@ bottomNavigationBar: BottomAppBar(
     mainAxisAlignment: MainAxisAlignment.center,
     children: [
       FloatingActionButton(
-        onPressed: _incrementCounter,
+        heroTag: 'searcjkjkhxz',
+        onPressed: (){setState(() {
+         menuu = false;
+         favor = false;
+          });},
         tooltip: 'Increment',
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.search),
       ),
       SizedBox(width: 50),
       FloatingActionButton(
-        onPressed: (){setState(() {menuu = false;}); },
+        heroTag: 'jjkkkkkkkkkkkkk',
+        onPressed: (){setState(() {
+           menuu = false;favor = true; isLoading = false;
+          }); },
         tooltip: 'Decrement',
         child: const Icon(Icons.home),
       ),
 
       SizedBox(width: 50),
       FloatingActionButton(
-        onPressed: (){setState(() {menuu = true;});},
+        heroTag: 'ressultzjjxckkax',
+        onPressed: (){setState(() {menuu = true;favor=false;});},
+        tooltip: 'Dement',
+        child: const Icon(Icons.menu),
+      )
+    ],
+  ),
+),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked, 
+    );
+
+
+    }
+
+
+    ///////////////////////////////////////  favorite ////////////////////////////////////////////////////////////////
+    if (menuu == false && favor == true){
+
+
+            setState(() {    
+              print(MyApp.favlist);
+       if (isLoading == false && MyApp.favlist.length > 0){
+     
+       for (String id in MyApp.favlist){
+
+              loadImage(id);
+              
+            }
+        isLoading = true;
+        
+       }
+      });
+        
+
+         s = Scaffold(
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text("Favorites"),
+           FloatingActionButton(
+            heroTag: 'sejkkkkkkkkkkkkaraa',
+          onPressed: (){Navigator.pushNamed(context, "/cart");},
+          tooltip: 'Dement',
+          child: const Icon(Icons.shopping_cart_rounded),
+        ),
+          ],//children
+        ),
+
+        
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            
+              Expanded(child: ListView.builder(
+      itemCount: MyApp.favlist.length,  
+      itemBuilder: (BuildContext context, int index) {
+        return SizedBox(
+          height:155 ,
+          child: ElevatedButton(
+            
+            style: ElevatedButton.styleFrom(  
+              backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(1.0), 
+                
+    ),
+  ),
+            onPressed: () {Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (context) => recipt(idd: MyApp.favlist[index]),
+  ),
+);},
+            child:   Row(
+              
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [if(imagelist.length >= index+1 )
+                  isLoading && imagelist[MyApp.favlist[index]] != null
+                    ?  Image.network(
+                    imagelist[MyApp.favlist[index]],
+                    fit: BoxFit.cover,
+                    
+                    width: 120.0,
+                    height: 120.0,
+                    )
+                    : CircularProgressIndicator(), 
+                  Expanded(child:
+                  Text("  ${MyApp.favlist[index]}",
+                  style: TextStyle(color: Color.fromARGB(255, 9, 3, 3)),
+                  ),
+                  ),
+               Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+  if( idmenufav == index) IconButton(
+  
+  icon: Icon(Icons.delete),
+  onPressed: () {
+    MyApp.favadd(MyApp.favlist[index]);
+    setState(() {
+      
+    });
+  },),
+
+  IconButton(
+  icon: Icon(Icons.menu),
+  onPressed: () {
+    setState(() {
+  if(idmenufav == index) idmenufav = -1;else idmenufav = index;
+
+ });
+  },
+),
+
+  if(idmenufav == index) IconButton(
+  icon: Icon(MyApp.cartlist.contains(MyApp.favlist[index]) ? (Icons.add_shopping_cart) : (Icons.remove_shopping_cart)),
+  onPressed: () {
+    setState(() {
+      MyApp.cartadd(MyApp.favlist[index]);
+    });
+ 
+  },),])
+
+                ],
+              ),
+         
+
+            
+          ),
+        );
+      },
+    ),),
+          ],
+        ),
+      ),
+      
+bottomNavigationBar: BottomAppBar(
+  color: Theme.of(context).colorScheme.primaryContainer,
+  child: Row(
+    mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+      FloatingActionButton(
+        heroTag: 'searcjkjkhxz',
+        onPressed: (){setState(() {
+         menuu = false;
+         favor = false;
+          });},
+        tooltip: 'Increment',
+        child: const Icon(Icons.search),
+      ),
+      SizedBox(width: 50),
+      FloatingActionButton(
+        heroTag: 'jjkkkkkkkkkkkkk',
+        onPressed: (){setState(() {
+           menuu = false;favor = true; isLoading = false;
+          }); },
+        tooltip: 'Decrement',
+        child: const Icon(Icons.home),
+      ),
+
+      SizedBox(width: 50),
+      FloatingActionButton(
+        heroTag: 'ressultzjjxckkax',
+        onPressed: (){setState(() {menuu = true;favor=false;});},
         tooltip: 'Dement',
         child: const Icon(Icons.menu),
       )

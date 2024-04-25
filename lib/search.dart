@@ -1,10 +1,13 @@
 
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/widgets.dart';
 import 'package:recipes/home.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:recipes/recipt.dart';
 
 
 class searchPage extends StatefulWidget {
@@ -85,41 +88,56 @@ void _buildlist() async {
   setState(() {
     l = tempList + choiceList;
   });
+  print(l);
 }
 
 
 
 void findRecipesWithComponents(List<String> selectedComponents) async {
-  List<String> foundRecipes = [];
+ 
 
 
     CollectionReference users =  FirebaseFirestore.instance.collection('repices');
   QuerySnapshot querySnapshot = await users.get();
 
-  
- 
+   List<String> foundRecipes = [];
+ for (var doc in querySnapshot.docs) {
+     // print(doc.data());
+      var d = doc.data();
+       Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+
+  if (data.containsKey(selectedComponents[0])) {
+        
+        foundRecipes.add(doc.id);
+        
+      
+
 
   for (String component in selectedComponents) {
 
    // print(querySnapshot.docs);
-     for (var doc in querySnapshot.docs) {
-     // print(doc.data());
-      var d = doc.data();
-       Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-      
-      if (data.containsKey(component)) {
-        if(!foundRecipes.contains(component)){
-        foundRecipes.add(doc.id);}
+    users.doc(doc.id).get().then((value) {
+      Map<String, dynamic> data = value.data() as Map<String, dynamic>;
+      if (!data.containsKey(component)) {
         
-      }
+        foundRecipes.remove(doc.id);
+      } 
+      
+  });
+}}
+      // if (data.containsKey(component)) {
+      //   if(!foundRecipes.contains(component)){
+      //   foundRecipes.add(doc.id);}
+        
+      // }
     
-  }
+  
 
   }
 
  setState(() {
   
-   fl = foundRecipes.toSet().toList();
+   fl = foundRecipes;
  });
   
   
@@ -133,7 +151,7 @@ late bool sea = false;
 
   @override
   Widget build(BuildContext context) {
-    //loadImage();
+    
     Scaffold s;
     if (sea == false){
      s = Scaffold(
@@ -146,7 +164,7 @@ late bool sea = false;
             
             onChanged: (value) {
               setState(() {
-                searchTerm = value;
+                searchTerm = value.toLowerCase();
                // print(searchTerm);
                 
                 _buildlist(); 
@@ -159,23 +177,19 @@ late bool sea = false;
           ),
           ),
            FloatingActionButton(
+            heroTag: 'seaaasdsadasr123xxx',
           onPressed: (){findRecipesWithComponents(choiceList);
           ;
           setState(() {
 
             findRecipesWithComponents(choiceList);
-   
-            // for (String id in fl){
-            //   loadImage(id);
-            // }
-            /////////////////////////////////////////////////////////////
             sea = true;
           }
           
           );
           },
           tooltip: 'Dement',
-          child: const Icon(Icons.ac_unit),
+          child: const Icon(Icons.saved_search_rounded),
         ),
           ],
         ),
@@ -205,10 +219,10 @@ late bool sea = false;
           
           ),
           
-            SizedBox(                                 
+            Expanded(                                 
               
-              width: 420,
-              height: 440,
+             
+              
               child:  ListView.builder(
       itemCount: l.length,
       itemBuilder: (BuildContext context, int index) {
@@ -217,10 +231,11 @@ late bool sea = false;
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1), ),
           
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
 
-                 Row(
+                 Expanded(child:Row(
+                  
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                    children: [
                     
@@ -229,11 +244,14 @@ late bool sea = false;
                       style: TextStyle(fontSize: 20,color: Colors.black,),
                       
                     ),
-                    
+                     Row(
+                      
+                      children: [
                   if(!choiceList.contains(l[index]))
-
+                                     
 
                                     ElevatedButton(
+                                      
                                  onPressed: () {
                                   choiceList.add(l[index]);
                                    _buildlist();
@@ -256,10 +274,13 @@ late bool sea = false;
                                   },
                                  child:const Icon(Icons.remove)
                                     ),
-
+                  ],
+                 
+                )
                    ],
+                   
                  ),
-            ],
+          )],
           ),
         );
 
@@ -279,6 +300,7 @@ bottomNavigationBar: BottomAppBar(
     mainAxisAlignment: MainAxisAlignment.center,
       children: [
         FloatingActionButton(
+          heroTag: 'searchzaxas123d123sa',
             onPressed: (){
               
               
@@ -289,6 +311,7 @@ bottomNavigationBar: BottomAppBar(
 
       SizedBox(width: 50),
       FloatingActionButton(
+          heroTag: 'resultzaxasd112cxz',
         onPressed: (){Navigator.pushNamedAndRemoveUntil(context, "/", (route) => false); },
         tooltip: 'Decrement',
         child: const Icon(Icons.home),
@@ -296,6 +319,7 @@ bottomNavigationBar: BottomAppBar(
 
       SizedBox(width: 50),
       FloatingActionButton(
+        heroTag: 'ressultzaxasd44',
         onPressed: (){},
         tooltip: 'Dement',
         child: const Icon(Icons.menu),
@@ -346,6 +370,7 @@ bottomNavigationBar: BottomAppBar(
           ),
           ),
            FloatingActionButton(
+            heroTag: 'seaaasdsadasr',
           onPressed: (){Navigator.pushNamedAndRemoveUntil(context, "/search", (route) => false);},
           tooltip: 'Dement',
           child: const Icon(Icons.ac_unit),
@@ -361,9 +386,9 @@ bottomNavigationBar: BottomAppBar(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            SizedBox(
-              width: 420,
-              height: 480,
+            Expanded(
+              
+              
               child:  ListView.builder(
       itemCount: fl.length,
       itemBuilder: (BuildContext context, int index) {
@@ -371,23 +396,31 @@ bottomNavigationBar: BottomAppBar(
           height:150 ,
           child: ElevatedButton(
             
-            style: ElevatedButton.styleFrom(
+            style: ElevatedButton.styleFrom(  
+              backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(1.0), 
+                borderRadius: BorderRadius.circular(8.0), 
     ),
   ),
-            onPressed: () {print('Button $index pressed');},
-            child:  Card(
-              child:Row(
+            onPressed: () {Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (context) => recipt(idd: fl[index]),
+  ),
+);},
+            child:  Row(
                 children: [
                   if(imagelist.length >= index+1 )
                   isLoading
-                    ?  Image.network(imagelist[index])
-                    : CircularProgressIndicator(), //////////////////////////////////////////
+                    ?  Image.network(imagelist[index],
+                    fit: BoxFit.cover,
+                    width: 120.0,
+                    height: 120.0,)
+                    : CircularProgressIndicator(), 
                   
                   SizedBox(width: 10),
-                  Text(fl[index],
-                    style: TextStyle(fontSize: 20,color: Colors.black),
+                  Text('   ${fl[index]}',
+                    //style: TextStyle(fontSize: 20,color: Colors.black),
                   
                   ),
                 ],
@@ -395,7 +428,7 @@ bottomNavigationBar: BottomAppBar(
               
             
 
-            ),
+            
           ),
         );
       },
@@ -410,6 +443,7 @@ bottomNavigationBar: BottomAppBar(
     mainAxisAlignment: MainAxisAlignment.center,
       children: [
         FloatingActionButton(
+          heroTag: 'searchzaxas123d',
             onPressed: (){
               
               
@@ -420,6 +454,7 @@ bottomNavigationBar: BottomAppBar(
 
       SizedBox(width: 50),
       FloatingActionButton(
+          heroTag: 'resultzaxasd112',
         onPressed: (){setState(() {
           sea = false;
         }); },
@@ -429,6 +464,7 @@ bottomNavigationBar: BottomAppBar(
 
       SizedBox(width: 50),
       FloatingActionButton(
+        heroTag: 'ressultzaxasd',
         onPressed: (){},
         tooltip: 'Dement',
         child: const Icon(Icons.menu),
