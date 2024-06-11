@@ -1,5 +1,8 @@
 import 'dart:io';
+import 'dart:math';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/rendering.dart';
+import 'package:recipes/registr.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -13,6 +16,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:recipes/favorite.dart';
 import 'package:recipes/cart.dart';
 import 'package:recipes/recip.dart';
+import 'package:recipes/autorization.dart';
+import 'package:recipes/user_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,30 +31,58 @@ void main() async {
   MyApp.favadd('-None00101');
   MyApp.cartadd('-None00101');
   createRecipe();
+  
 
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
   
-  static List<String> favlist =[];
+  static List<dynamic> favlist =[];
   static List<String> cartlist =[];
-  
+  static User? user = null;
+  static String uid = "null";
+  static Map<String,dynamic> componentikss = {};
+
+  static var userDoc;
+
+ static Future<void> getUserInfo(String uid) async {
+    userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+   //following = userDoc.data()['following'] ?? [] as List<String>;
+   try {
+   favlist = userDoc.data()['fovarites'] ?? [] ;}
+   catch (e) {
+     favlist = [];
+   }
+    
+  }
+
+
 static Future<void> favadd(String id) async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-   favlist = prefs.getStringList('fav') ?? [];
-   
+  // SharedPreferences prefs = await SharedPreferences.getInstance();
+  //  favlist = prefs.getStringList('fav') ?? [];
+  getUserInfo(uid);
   if(id == '-None00101'){return;}
 
-  if (!favlist.contains(id)) {
-    
-    favlist.add(id);
-    await prefs.setStringList('fav', favlist);
+  favlist = userDoc.data()['fovarites'] ?? [] ;
 
-  }else{
+  if (favlist.contains(id)) {
     favlist.remove(id);
-    await prefs.setStringList('fav', favlist);
   }
+  else {
+    favlist.add(id);
+  }
+  FirebaseFirestore.instance.collection('users').doc(uid).update({'fovarites': favlist});
+  
+  // if (!favlist.contains(id)) {
+    
+  //   favlist.add(id);
+  //   await prefs.setStringList('fav', favlist);
+
+  // }else{
+  //   favlist.remove(id);
+  //   await prefs.setStringList('fav', favlist);
+  // }
   
    
 }
@@ -108,6 +141,9 @@ static Future<void> cartadd(String id) async {
       "/result":(context) => FirestoreImageDisplay(),
        "/add":(context) => AddRecipePage(),
        "/cart":(context) => cartt(),
+       "/auth":(context) => LoginPage(),
+       "/register":(context) => RegistrationPage(),
+      
       
     },
 

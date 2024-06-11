@@ -43,7 +43,7 @@ class _cartt extends State<cartt> {
   @override
   void initState() {
     super.initState();
-    //findComponents();
+    componentiks = MyApp.componentikss;
   }
 
 
@@ -144,6 +144,7 @@ String similaryti({String a = "", String b = ""})   {
     
       setState(() {
         componentiks = componentes;
+        MyApp.componentikss = componentes;
       });
     }
   }

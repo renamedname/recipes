@@ -13,6 +13,8 @@ import 'package:recipes/recipt.dart';
 import 'package:recipes/favorite.dart';
 import 'dart:io';
 
+import 'package:recipes/user_page.dart';
+
 
 
 
@@ -294,7 +296,7 @@ if (menuu == true){
     SizedBox(
         width: 300,
        child: FloatingActionButton( 
-        heroTag: 'searagggvbcsdwch',
+        heroTag: 'searagggvbcsjdwch',
         onPressed: (){Navigator.pushNamed(context, "/add");},
         tooltip: 'Dement',
         child: Text("add recipe"),
@@ -304,16 +306,34 @@ if (menuu == true){
       SizedBox(
         width: 300,
         child: FloatingActionButton(
-          heroTag: 'seaarschjj',
+          heroTag: 'seaarshchjj',
           onPressed: (){Navigator.pushNamedAndRemoveUntil(context, "/search", (route) => false);},
          
           child: Text("componet search"),
         ),
       ),
+
+      SizedBox(
+        width: 300,
+        child: FloatingActionButton(
+          heroTag: 'sjjdsfdsyfsdjjj',
+          onPressed: (){
+            if( MyApp.uid != "null"){Navigator.push(
+  context,
+  MaterialPageRoute(
+    
+    builder: (context) => UserPage(uidd: MyApp.user!.uid),
+  ),
+);}},
+         
+          child: Text("my profile"),
+        ),
+      ),
+
       SizedBox(
         width: 300,
        child: FloatingActionButton( 
-        heroTag: 'searasdwch',
+        heroTag: 'searashdwch',
         onPressed: (){},
         tooltip: 'Dement',
         child: Text("Settings"),
@@ -325,10 +345,12 @@ if (menuu == true){
       SizedBox(
         width: 300,
        child: FloatingActionButton( 
-        heroTag: 'searwch',
-        onPressed: (){},
+        heroTag: 'searwcddbdddh',
+        onPressed: (){
+          Navigator.pushNamed(context, "/auth");
+        },
         tooltip: 'Dement',
-        child: Text("donate"),    
+        child: Text("login"),    
     ),
     ),
       
@@ -344,7 +366,7 @@ bottomNavigationBar: BottomAppBar(
     mainAxisAlignment: MainAxisAlignment.center,
     children: [
       FloatingActionButton(
-        heroTag: 'searcjkjkhxz',
+        heroTag: 'searcjkjkhrxz',
         onPressed: (){setState(() {
          menuu = false;
          favor = false;
@@ -354,7 +376,7 @@ bottomNavigationBar: BottomAppBar(
       ),
       SizedBox(width: 50),
       FloatingActionButton(
-        heroTag: 'jjkkkkkkkkkkkkk',
+        heroTag: 'jjkkkkkkkkrkkkkk',
         onPressed: (){setState(() {
            menuu = false;favor = true; isLoading = false;
           }); },
@@ -364,7 +386,7 @@ bottomNavigationBar: BottomAppBar(
 
       SizedBox(width: 50),
       FloatingActionButton(
-        heroTag: 'ressultzjjxckkax',
+        heroTag: 'ressultzjrjxckkax',
         onPressed: (){setState(() {menuu = true;favor=false;});},
         tooltip: 'Dement',
         child: const Icon(Icons.menu),
@@ -382,6 +404,7 @@ bottomNavigationBar: BottomAppBar(
     ///////////////////////////////////////  favorite ////////////////////////////////////////////////////////////////
     if (menuu == false && favor == true){
 
+          
 
             setState(() {    
               print(MyApp.favlist);
@@ -406,7 +429,7 @@ bottomNavigationBar: BottomAppBar(
           children: [
             Text("Favorites"),
            FloatingActionButton(
-            heroTag: 'sejkkkkkkkkkkkkaraa',
+            heroTag: 'sejkkkkkkkrkkkkkaraa',
           onPressed: (){Navigator.pushNamed(context, "/cart");},
           tooltip: 'Dement',
           child: const Icon(Icons.shopping_cart_rounded),
